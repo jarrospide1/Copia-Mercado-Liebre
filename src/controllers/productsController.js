@@ -6,6 +6,8 @@ let productsArray = JSON.parse(fs.readFileSync(productsFilePath, 'utf-8'));
 
 const toThousand = n => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
+const {validationResult} = require('express-validator')
+
 const controller = {
 	// Root - Show all products
 	index: (req, res) => {
@@ -20,11 +22,22 @@ const controller = {
 
 	// Create - Form to create
 	create: (req, res) => {
-		res.render('product-create-form');
+		return res.render('product-create-form');
 	},
 	
 	// Create -  Method to store
 	store: (req, res) => {
+		const validationErrors = validationResult(req);
+
+		if (!validationErrors.isEmpty()) {
+			//return res.json(validationErrors)
+			//return res.json(validationErrors.mapped())
+			return res.render('product-create-form', {
+				errors: validationErrors.mapped(),
+				oldBodyData: req.body
+			})
+		} 
+		
 		//generar ID
 		const generateId = () => {
 			// 1. Obtenemos el ultimo producto almacenado en la DB
